@@ -14,6 +14,7 @@ var grid = document.getElementById('grid');
 var bomb_marker = 'X';
 var flag_marker = 'F';
 var is_game_over = false;
+var remaining_bombs = 0;
 
 var cell_elements = [];
 var bombs_list = [];
@@ -29,6 +30,8 @@ if (test){
 function new_game(){
     initBombs(grid_size_x.value, grid_size_y.value);
     construct_grid(grid_size_x.value, grid_size_y.value);
+    remaining_bombs = bombs.value;
+    update_bomb_count();
 }
 
 function initBombs(x, y){
@@ -231,12 +234,21 @@ function cell_right_clicked(x, y){
         var cell_text = cell_elements[y][x].innerHTML;
 
         cell_elements[y][x].innerHTML = (cell_text == flag_marker)? '' : flag_marker;
+        if(cell_text == flag_marker){
+            remaining_bombs++;
+        }else{
+            remaining_bombs--;
+        }
+        update_bomb_count();
     }
+}
+
+function update_bomb_count(){
+    document.getElementById('remaining_bomb_count').innerHTML = remaining_bombs;
 }
 
 new_game_btn.addEventListener('click', function(e){
     new_game();
 });
 
-//TODO: show remaining bombs
 //TODO: show timer
