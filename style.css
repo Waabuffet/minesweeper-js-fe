@@ -1,7 +1,9 @@
 td{
+    text-align: center;
+}
+#grid td{
     width: 20px;
     height: 20px;
-    text-align: center;
 }
 
 .raw-cell{
@@ -14,4 +16,15 @@ td{
 
 .bg-green{
     background-color: green;
+}
+
+#controls-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+input{
+    width: 100%;
+}
+button{
+    width: 100%;
 }

@@ -7,19 +7,40 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <input type="number" min="10" id="grid-size-x" placeholder="grid-size-x">
-    <input type="number" min="10" id="grid-size-y" placeholder="grid-size-y">
-    <input type="number" min="2" id="bombs" placeholder="bombs">
-    <button id="new-game-btn">New Game</button>
-
-    <span> Remaining bombs: </span>
-    <span id="remaining_bomb_count"></span>
-
-    <span> | Time: </span>
-    <span id="clock_m"></span>
-    <span>:</span>
-    <span id="clock_s"></span>
-
+    <table border="1" id="controls-table">
+        <thead>
+            <tr>
+                <th colspan="5">Controls</th>
+            </tr>
+            <tr>
+                <th>Grid size x</th>
+                <th>Grid size y</th>
+                <th>Bombs</th>
+                <th>Remaining Bombs</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="number" min="10" id="grid-size-x" placeholder="grid-size-x"></td>
+                <td><input type="number" min="10" id="grid-size-y" placeholder="grid-size-y"></td>
+                <td><input type="number" min="2" id="bombs" placeholder="bombs"></td>
+                <td><span id="remaining_bomb_count">0</span></td>
+                <td>
+                    <span id="clock_m">00</span>
+                    <span>:</span>
+                    <span id="clock_s">00</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5">
+                    <button id="new-game-btn">New Game</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <br>
     <table id="grid" border="1"></table>
     <script src="index.js"></script>
 </body>

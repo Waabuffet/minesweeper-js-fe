@@ -1,4 +1,4 @@
-var test = true;
+var test = false;
 
 var test_conf = {
     grid_size_x: 20,
@@ -13,11 +13,19 @@ var bombs = document.getElementById('bombs');
 var clock_m = document.getElementById('clock_m');
 var clock_s = document.getElementById('clock_s');
 var grid = document.getElementById('grid');
+
 var bomb_marker = 'X';
 var flag_marker = 'F';
 var is_game_over = false;
 var remaining_bombs = 0;
-var myStopWatch = null;
+
+var stopwatch = {
+    interval: null,
+    seconds: 0,
+    minutes: 0,
+    delay: 1000,
+    offset: null
+}
 
 var cell_elements = [];
 var bombs_list = [];
@@ -30,80 +38,54 @@ if (test){
     new_game();
 }
 
-function Stopwatch(elem_m, elem_s) {
-
-    var offset,
-        clock,
-        interval,
-        minutes = 0,
-        delay = 1000;
-  
-    // initialize
-    reset();
-  
-    function start() {
-        if (!interval) {
-            offset = Date.now();
-            interval = setInterval(update, delay);
-        }
+function startStopWatch(){
+    if (!stopwatch.interval) {
+        stopwatch.offset = Date.now();
+        stopwatch.interval = setInterval(updateStopWatch, stopwatch.delay);
     }
-  
-    function stop() {
-        if (interval) {
-            clearInterval(interval);
-            interval = null;
-        }
+}
+function updateStopWatch(){
+    var now = Date.now();
+    var d = now - stopwatch.offset;
+    
+    stopwatch.offset = now;
+    stopwatch.seconds += d;
+    showStopWatch();
+}
+function resetStopWatch(){
+    stopwatch.seconds = 0;
+    stopwatch.minutes = 0;
+    stopStopWatch();
+    startStopWatch();
+    showStopWatch();
+}
+function stopStopWatch(){
+    if (stopwatch.interval) {
+        clearInterval(stopwatch.interval);
+        stopwatch.interval = null;
     }
-  
-    function reset() {
-        clock = 0;
-        minutes = 0;
-        stop();
-        start();
-        render(0);
-    }
-  
-    function update() {
-        clock += delta();
-        render();
-    }
-  
-    function render() {
-        var s = parseInt(clock / 1000);
+}
+function showStopWatch(){
+    var s = parseInt(stopwatch.seconds / 1000);
         if(s == 60){
-            minutes++;
-            clock = 0;
+            stopwatch.minutes++;
+            stopwatch.seconds = 0;
             s = 0;
         }
-        elem_s.innerHTML = (s < 10)? '0' + s : s;
-        elem_m.innerHTML = (minutes < 10)? '0' + minutes : minutes;
-    }
-  
-    function delta() {
-        var now = Date.now(),
-            d = now - offset;
-    
-        offset = now;
-        return d;
-    }
-  
-    // public API
-    this.start = start;
-    this.stop = stop;
-    this.reset = reset;
-};
+        clock_s.innerHTML = (s < 10)? '0' + s : s;
+        clock_m.innerHTML = (stopwatch.minutes < 10)? '0' + stopwatch.minutes : stopwatch.minutes;
+}
 
 function new_game(){
-    initBombs(grid_size_x.value, grid_size_y.value);
-    construct_grid(grid_size_x.value, grid_size_y.value);
-    remaining_bombs = bombs.value;
-    update_bomb_count();
-
-    if(!myStopWatch){
-        myStopWatch = new Stopwatch(clock_m, clock_s);
-        myStopWatch.start();
+    if(!grid_size_x.value || !grid_size_y.value || !bombs.value){
+        alert('fill in all values');
     }else{
-        myStopWatch.reset();
+        initBombs(grid_size_x.value, grid_size_y.value);
+        construct_grid(grid_size_x.value, grid_size_y.value);
+        remaining_bombs = bombs.value;
+        update_bomb_count();
+    
+        resetStopWatch();    
     }
     
 }
@@ -279,7 +261,7 @@ function game_over(){
             }
         }
     }
-    myStopWatch.stop();
+    stopStopWatch();
 }
 
 function check_if_game_won(){
@@ -301,6 +283,9 @@ function congrats(){
             }
         }
     }
+    remaining_bombs = 0;
+    update_bomb_count();
+    stopStopWatch();
 }
 
 function cell_right_clicked(x, y){
