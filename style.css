@@ -1,0 +1,17 @@
+td{
+    width: 20px;
+    height: 20px;
+    text-align: center;
+}
+
+.raw-cell{
+    background-color: grey;
+}
+
+.bg-red{
+    background-color: red;
+}
+
+.bg-green{
+    background-color: green;
+}
