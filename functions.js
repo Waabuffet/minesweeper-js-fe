@@ -10,11 +10,14 @@ var new_game_btn = document.getElementById('new-game-btn');
 var grid_size_x = document.getElementById('grid-size-x');
 var grid_size_y = document.getElementById('grid-size-y');
 var bombs = document.getElementById('bombs');
+var clock_m = document.getElementById('clock_m');
+var clock_s = document.getElementById('clock_s');
 var grid = document.getElementById('grid');
 var bomb_marker = 'X';
 var flag_marker = 'F';
 var is_game_over = false;
 var remaining_bombs = 0;
+var myStopWatch = null;
 
 var cell_elements = [];
 var bombs_list = [];
@@ -27,11 +30,82 @@ if (test){
     new_game();
 }
 
+function Stopwatch(elem_m, elem_s) {
+
+    var offset,
+        clock,
+        interval,
+        minutes = 0,
+        delay = 1000;
+  
+    // initialize
+    reset();
+  
+    function start() {
+        if (!interval) {
+            offset = Date.now();
+            interval = setInterval(update, delay);
+        }
+    }
+  
+    function stop() {
+        if (interval) {
+            clearInterval(interval);
+            interval = null;
+        }
+    }
+  
+    function reset() {
+        clock = 0;
+        minutes = 0;
+        stop();
+        start();
+        render(0);
+    }
+  
+    function update() {
+        clock += delta();
+        render();
+    }
+  
+    function render() {
+        var s = parseInt(clock / 1000);
+        if(s == 60){
+            minutes++;
+            clock = 0;
+            s = 0;
+        }
+        elem_s.innerHTML = (s < 10)? '0' + s : s;
+        elem_m.innerHTML = (minutes < 10)? '0' + minutes : minutes;
+    }
+  
+    function delta() {
+        var now = Date.now(),
+            d = now - offset;
+    
+        offset = now;
+        return d;
+    }
+  
+    // public API
+    this.start = start;
+    this.stop = stop;
+    this.reset = reset;
+};
+
 function new_game(){
     initBombs(grid_size_x.value, grid_size_y.value);
     construct_grid(grid_size_x.value, grid_size_y.value);
     remaining_bombs = bombs.value;
     update_bomb_count();
+
+    if(!myStopWatch){
+        myStopWatch = new Stopwatch(clock_m, clock_s);
+        myStopWatch.start();
+    }else{
+        myStopWatch.reset();
+    }
+    
 }
 
 function initBombs(x, y){
@@ -205,6 +279,7 @@ function game_over(){
             }
         }
     }
+    myStopWatch.stop();
 }
 
 function check_if_game_won(){
@@ -250,5 +325,3 @@ function update_bomb_count(){
 new_game_btn.addEventListener('click', function(e){
     new_game();
 });
-
-//TODO: show timer
