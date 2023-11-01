@@ -153,9 +153,7 @@ function cell_clicked(x, y){
                 var bomb_count = get_neighbouring_bombs_count(x, y);
                 var flag_count = get_neighbouring_flags_count(x, y);
 
-                console.log('count:', bomb_count, flag_count);
                 if(bomb_count <= flag_count){
-                    console.log('reached here');
                     for(var i = -1; i <= 1; i++){
                         for(var j = -1; j <= 1; j++){
                             var cell_x = x + j;
