@@ -3,6 +3,11 @@ var animation = true;
 var animation_delay = 50; // in milliseconds
 
 var available_difficulties = {
+    beginner: {
+        x: 10,
+        y: 10,
+        bomb: 10
+    },
     easy: {
         x: 20,
         y: 20,
@@ -125,6 +130,7 @@ function new_game(){
 }
 
 function init_all(){
+    is_game_over = false;
     initBombs(grid_size_x.value, grid_size_y.value);
     construct_grid(grid_size_x.value, grid_size_y.value);
     remaining_bombs = 0;
@@ -219,8 +225,9 @@ function cell_clicked(x, y){
                                 var cell_x = x + j;
                                 var cell_y = y + i;
                                 if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
-                                    if(cell_elements[cell_y][cell_x].classList != ''){
+                                    if(cell_elements[cell_y][cell_x].classList != '' && cell_elements[cell_y][cell_x].innerHTML != flag_marker){
                                         cell_elements[cell_y][cell_x].innerHTML = flag_marker;
+                                        cell_elements[cell_y][cell_x].classList = 'bg-aqua';
                                         update_bomb_count(-1);
                                     }
                                 }
@@ -394,6 +401,7 @@ function cell_right_clicked(x, y){
         var cell_text = cell_elements[y][x].innerHTML;
 
         cell_elements[y][x].innerHTML = (cell_text == flag_marker)? '' : flag_marker;
+        cell_elements[y][x].classList = (cell_text == flag_marker)? 'raw-cell' : 'bg-aqua';
         if(cell_text == flag_marker){
             update_bomb_count(1);
         }else{

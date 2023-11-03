@@ -13,9 +13,11 @@ td{
 .bg-red{
     background-color: red;
 }
-
 .bg-green{
-    background-color: green;
+    background-color: greenyellow;
+}
+.bg-aqua{
+    background-color: aqua;
 }
 
 #controls-table{
