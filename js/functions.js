@@ -1,4 +1,6 @@
 var test = false;
+var animation = true;
+var animation_delay = 50; // in milliseconds
 
 var test_conf = {
     grid_size_x: 20,
@@ -152,8 +154,9 @@ function cell_clicked(x, y){
 
                 var bomb_count = get_neighbouring_bombs_count(x, y);
                 var flag_count = get_neighbouring_flags_count(x, y);
+                var unclicked_count = get_neighbouring_unclicked_count(x, y);
 
-                if(bomb_count <= flag_count){
+                if(bomb_count <= flag_count){ // reveal non bombs
                     for(var i = -1; i <= 1; i++){
                         for(var j = -1; j <= 1; j++){
                             var cell_x = x + j;
@@ -164,6 +167,18 @@ function cell_clicked(x, y){
                                     game_over();
                                 }else if(bombs_list[cell_y][cell_x] != bomb_marker){
                                     start_checking_neighbours(cell_x, cell_y);
+                                }
+                            }
+                        }
+                    }
+                }else if(bomb_count == unclicked_count){ // auto-flag bombs
+                    for(var i = -1; i <= 1; i++){
+                        for(var j = -1; j <= 1; j++){
+                            var cell_x = x + j;
+                            var cell_y = y + i;
+                            if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
+                                if(cell_elements[cell_y][cell_x].classList != ''){
+                                    cell_elements[cell_y][cell_x].innerHTML = flag_marker;
                                 }
                             }
                         }
@@ -186,7 +201,11 @@ function start_checking_neighbours(x, y){
 
     if(adjacent_bombs_count == 0){
         neighboors_to_check.push({x: x, y: y});
-        check_neighbours();
+        if(animation){
+            check_neighbours_animated();
+        }else{
+            check_neighbours();
+        }
     }else{
         cell_elements[y][x].innerHTML = adjacent_bombs_count;
     }
@@ -201,18 +220,42 @@ function check_neighbours(){
                 var cell_y = cell_coords.y + i;
                 if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
                     if(cell_elements[cell_y][cell_x].classList != ''){
-                        cell_elements[cell_y][cell_x].classList = '';
-                        var adjacent_bombs_count = get_neighbouring_bombs_count(cell_x, cell_y);
-
-                        if(adjacent_bombs_count == 0){
-                            neighboors_to_check.push({x: cell_x, y: cell_y});
-                        }else{
-                            cell_elements[cell_y][cell_x].innerHTML = adjacent_bombs_count;
-                        }
+                        reveal_cell(cell_x, cell_y);
                     }
                 }
             }
         }
+    }
+}
+
+function check_neighbours_animated(){
+    if(neighboors_to_check.length > 0){
+        var cell_coords = neighboors_to_check.pop();
+        for(var i = -1; i <= 1; i++){
+            for(var j = -1; j <= 1; j++){
+                var cell_x = cell_coords.x + j;
+                var cell_y = cell_coords.y + i;
+                if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
+                    if(cell_elements[cell_y][cell_x].classList != ''){
+                        reveal_cell(cell_x, cell_y);
+                        setTimeout(() => {
+                            check_neighbours_animated();
+                        }, animation_delay);
+                    }
+                }
+            }
+        }
+    }
+}
+
+function reveal_cell(x, y){
+    cell_elements[y][x].classList = '';
+    var adjacent_bombs_count = get_neighbouring_bombs_count(x, y);
+
+    if(adjacent_bombs_count == 0){
+        neighboors_to_check.push({x: x, y: y});
+    }else{
+        cell_elements[y][x].innerHTML = adjacent_bombs_count;
     }
 }
 
@@ -246,6 +289,22 @@ function get_neighbouring_flags_count(x, y){
         }
     }
     return flag_count;
+}
+
+function get_neighbouring_unclicked_count(x, y){
+    var unclicked_count = 0;
+    for(var i = -1; i <= 1; i++){
+        for(var j = -1; j <= 1; j++){
+            var cell_x = x + j;
+            var cell_y = y + i;
+            if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
+                if(cell_elements[cell_y][cell_x].classList != ''){
+                    unclicked_count++;
+                }
+            }
+        }
+    }
+    return unclicked_count;
 }
 
 function game_over(){
