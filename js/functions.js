@@ -2,6 +2,29 @@ var test = false;
 var animation = true;
 var animation_delay = 50; // in milliseconds
 
+var available_difficulties = {
+    easy: {
+        x: 20,
+        y: 20,
+        bomb: 30
+    },
+    intermediate: {
+        x: 30,
+        y: 30,
+        bomb: 100
+    },
+    hard: {
+        x: 50,
+        y: 30,
+        bomb: 200
+    },
+    extreme: {
+        x: 60,
+        y: 30,
+        bomb: 400
+    }
+}
+
 var test_conf = {
     grid_size_x: 20,
     grid_size_y: 10,
@@ -15,6 +38,8 @@ var bombs = document.getElementById('bombs');
 var clock_m = document.getElementById('clock_m');
 var clock_s = document.getElementById('clock_s');
 var grid = document.getElementById('grid');
+var difficulty_list = document.getElementById('difficulty');
+fill_difficulties();
 
 var bomb_marker = 'X';
 var flag_marker = 'F';
@@ -23,8 +48,7 @@ var remaining_bombs = 0;
 
 var stopwatch = {
     interval: null,
-    seconds: 0,
-    minutes: 0,
+    clock: 0,
     delay: 1000,
     offset: null
 }
@@ -34,9 +58,7 @@ var bombs_list = [];
 var neighboors_to_check = [];
 
 if (test){
-    grid_size_x.value = test_conf.grid_size_x;
-    grid_size_y.value = test_conf.grid_size_y;
-    bombs.value = test_conf.bomb;
+    difficulty_list.value = 'easy';
     new_game();
 }
 
@@ -51,12 +73,11 @@ function updateStopWatch(){
     var d = now - stopwatch.offset;
     
     stopwatch.offset = now;
-    stopwatch.seconds += d;
+    stopwatch.clock += d;
     showStopWatch();
 }
 function resetStopWatch(){
-    stopwatch.seconds = 0;
-    stopwatch.minutes = 0;
+    stopwatch.clock = 0;
     stopStopWatch();
     startStopWatch();
     showStopWatch();
@@ -68,28 +89,48 @@ function stopStopWatch(){
     }
 }
 function showStopWatch(){
-    var s = parseInt(stopwatch.seconds / 1000);
-        if(s == 60){
-            stopwatch.minutes++;
-            stopwatch.seconds = 0;
-            s = 0;
-        }
-        clock_s.innerHTML = (s < 10)? '0' + s : s;
-        clock_m.innerHTML = (stopwatch.minutes < 10)? '0' + stopwatch.minutes : stopwatch.minutes;
+    var c = parseInt(stopwatch.clock / 1000);
+    var seconds = c % 60;
+    var minutes = Math.floor(c / 60);
+    clock_s.innerHTML = (seconds < 10)? '0' + seconds : seconds;
+    clock_m.innerHTML = (minutes < 10)? '0' + minutes : minutes;
+}
+function fill_difficulties(){
+    var opts = keys = Object.keys(available_difficulties);
+    for(var i = 0; i < opts.length; i++){
+        var option = document.createElement('option');
+        option.value = opts[i];
+        option.innerHTML = opts[i];
+        difficulty_list.append(option);
+    }
 }
 
 function new_game(){
-    if(!grid_size_x.value || !grid_size_y.value || !bombs.value){
-        alert('fill in all values');
+    if(difficulty_list.value){
+        if(difficulty_list.value == 'manual'){
+            if(!grid_size_x.value || !grid_size_y.value || !bombs.value){
+                alert('fill in all values or choose difficulty');
+            }else{
+                init_all();
+            }
+        }else{
+            grid_size_x.value = available_difficulties[difficulty_list.value].x;
+            grid_size_y.value = available_difficulties[difficulty_list.value].y;
+            bombs.value = available_difficulties[difficulty_list.value].bomb;
+            init_all();
+        }
     }else{
-        initBombs(grid_size_x.value, grid_size_y.value);
-        construct_grid(grid_size_x.value, grid_size_y.value);
-        remaining_bombs = bombs.value;
-        update_bomb_count();
-    
-        resetStopWatch();    
+        alert('choose difficulty');
     }
-    
+}
+
+function init_all(){
+    initBombs(grid_size_x.value, grid_size_y.value);
+    construct_grid(grid_size_x.value, grid_size_y.value);
+    remaining_bombs = 0;
+    update_bomb_count(bombs.value);
+
+    resetStopWatch();
 }
 
 function initBombs(x, y){
@@ -142,51 +183,54 @@ function construct_grid(x, y){
 function cell_clicked(x, y){
     if(!is_game_over){
         var bombs_list_value = bombs_list[y][x];
-        if(bombs_list_value == bomb_marker){ //* clicked on a bomb, game over
-            cell_elements[y][x].classList = 'bg-red';
-            game_over();
-        }else if(cell_elements[y][x].classList == ''){ //* clicked on an already clicked cell, speed up game
-            var cell_value = cell_elements[y][x].innerHTML;
-            if(cell_value != ''){
-                //* if number of bombs less or equals to number of flags in neighbours
-                //*     if flags pos are same as bombs pos, then reveal other cells that dont have flags with their number
-                //*     else game over
+        if(cell_elements[y][x].innerHTML != flag_marker){
+            if(bombs_list_value == bomb_marker){ //* clicked on a bomb, game over
+                cell_elements[y][x].classList = 'bg-red';
+                game_over();
+            }else if(cell_elements[y][x].classList == ''){ //* clicked on an already clicked cell, speed up game
+                var cell_value = cell_elements[y][x].innerHTML;
+                if(cell_value != ''){
+                    //* if number of bombs less or equals to number of flags in neighbours
+                    //*     if flags pos are same as bombs pos, then reveal other cells that dont have flags with their number
+                    //*     else game over
 
-                var bomb_count = get_neighbouring_bombs_count(x, y);
-                var flag_count = get_neighbouring_flags_count(x, y);
-                var unclicked_count = get_neighbouring_unclicked_count(x, y);
+                    var bomb_count = get_neighbouring_bombs_count(x, y);
+                    var flag_count = get_neighbouring_flags_count(x, y);
+                    var unclicked_count = get_neighbouring_unclicked_count(x, y);
 
-                if(bomb_count <= flag_count){ // reveal non bombs
-                    for(var i = -1; i <= 1; i++){
-                        for(var j = -1; j <= 1; j++){
-                            var cell_x = x + j;
-                            var cell_y = y + i;
-                            if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
-                                if(bombs_list[cell_y][cell_x] == bomb_marker && cell_elements[cell_y][cell_x].innerHTML != flag_marker){
-                                    cell_elements[cell_y][cell_x].classList = 'bg-red';
-                                    game_over();
-                                }else if(bombs_list[cell_y][cell_x] != bomb_marker){
-                                    start_checking_neighbours(cell_x, cell_y);
+                    if(bomb_count <= flag_count){ // reveal non bombs
+                        for(var i = -1; i <= 1; i++){
+                            for(var j = -1; j <= 1; j++){
+                                var cell_x = x + j;
+                                var cell_y = y + i;
+                                if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
+                                    if(bombs_list[cell_y][cell_x] == bomb_marker && cell_elements[cell_y][cell_x].innerHTML != flag_marker){
+                                        cell_elements[cell_y][cell_x].classList = 'bg-red';
+                                        game_over();
+                                    }else if(bombs_list[cell_y][cell_x] != bomb_marker){
+                                        start_checking_neighbours(cell_x, cell_y);
+                                    }
                                 }
                             }
                         }
-                    }
-                }else if(bomb_count == unclicked_count){ // auto-flag bombs
-                    for(var i = -1; i <= 1; i++){
-                        for(var j = -1; j <= 1; j++){
-                            var cell_x = x + j;
-                            var cell_y = y + i;
-                            if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
-                                if(cell_elements[cell_y][cell_x].classList != ''){
-                                    cell_elements[cell_y][cell_x].innerHTML = flag_marker;
+                    }else if(bomb_count == unclicked_count){ // auto-flag bombs
+                        for(var i = -1; i <= 1; i++){
+                            for(var j = -1; j <= 1; j++){
+                                var cell_x = x + j;
+                                var cell_y = y + i;
+                                if(cell_x >= 0 && cell_x < grid_size_x.value && cell_y >= 0 && cell_y < grid_size_y.value){
+                                    if(cell_elements[cell_y][cell_x].classList != ''){
+                                        cell_elements[cell_y][cell_x].innerHTML = flag_marker;
+                                        update_bomb_count(-1);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }else{ //* clicked on a unclicked cell, check neighbouring cells to show number
+                start_checking_neighbours(x, y);
             }
-        }else{ //* clicked on a unclicked cell, check neighbouring cells to show number
-            start_checking_neighbours(x, y);
         }
         if(check_if_game_won()){
             congrats();
@@ -340,8 +384,7 @@ function congrats(){
             }
         }
     }
-    remaining_bombs = 0;
-    update_bomb_count();
+    update_bomb_count(-remaining_bombs);
     stopStopWatch();
 }
 
@@ -352,18 +395,25 @@ function cell_right_clicked(x, y){
 
         cell_elements[y][x].innerHTML = (cell_text == flag_marker)? '' : flag_marker;
         if(cell_text == flag_marker){
-            remaining_bombs++;
+            update_bomb_count(1);
         }else{
-            remaining_bombs--;
+            update_bomb_count(-1);
         }
-        update_bomb_count();
     }
 }
 
-function update_bomb_count(){
+function update_bomb_count(inc_dec){
+    remaining_bombs += parseInt(inc_dec);
     document.getElementById('remaining_bomb_count').innerHTML = remaining_bombs;
 }
 
 new_game_btn.addEventListener('click', function(e){
     new_game();
+});
+
+difficulty_list.addEventListener('change', function(e){
+    console.log('changed', difficulty_list.value == 'manual')
+    grid_size_x.disabled = (difficulty_list.value != 'manual');
+    grid_size_y.disabled = (difficulty_list.value != 'manual');
+    bombs.disabled = (difficulty_list.value != 'manual');
 });

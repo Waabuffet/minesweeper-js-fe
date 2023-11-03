@@ -10,9 +10,10 @@
     <table border="1" id="controls-table">
         <thead>
             <tr>
-                <th colspan="5">Controls</th>
+                <th colspan="6">Controls</th>
             </tr>
             <tr>
+                <th>Difficulty</th>
                 <th>Grid size x</th>
                 <th>Grid size y</th>
                 <th>Bombs</th>
@@ -22,9 +23,13 @@
         </thead>
         <tbody>
             <tr>
-                <td><input type="number" min="10" id="grid-size-x" placeholder="grid-size-x"></td>
-                <td><input type="number" min="10" id="grid-size-y" placeholder="grid-size-y"></td>
-                <td><input type="number" min="2" id="bombs" placeholder="bombs"></td>
+                <td><select id="difficulty">
+                    <option value="" selected disabled>Select Difficulty</option>
+                    <option value="manual">manual</option>
+                </select></td>
+                <td><input type="number" min="10" id="grid-size-x" placeholder="grid-size-x" disabled></td>
+                <td><input type="number" min="10" id="grid-size-y" placeholder="grid-size-y" disabled></td>
+                <td><input type="number" min="2" id="bombs" placeholder="bombs" disabled></td>
                 <td><span id="remaining_bomb_count">0</span></td>
                 <td>
                     <span id="clock_m">00</span>
@@ -33,7 +38,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <button id="new-game-btn">New Game</button>
                 </td>
             </tr>
