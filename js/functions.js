@@ -426,7 +426,6 @@ new_game_btn.addEventListener('click', function(e){
 });
 
 difficulty_list.addEventListener('change', function(e){
-    console.log('changed', difficulty_list.value == 'manual')
     grid_size_x.disabled = (difficulty_list.value != 'manual');
     grid_size_y.disabled = (difficulty_list.value != 'manual');
     bombs.disabled = (difficulty_list.value != 'manual');
