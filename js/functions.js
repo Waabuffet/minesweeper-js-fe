@@ -277,6 +277,9 @@ function check_neighbours(){
             }
         }
     }
+    if(check_if_game_won()){
+        congrats();
+    }
 }
 
 function check_neighbours_animated(){
@@ -296,6 +299,9 @@ function check_neighbours_animated(){
                 }
             }
         }
+    }
+    if(check_if_game_won()){
+        congrats();
     }
 }
 
